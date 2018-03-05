@@ -5,7 +5,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
-     protected FrontEnd() throws RemoteException {
+    private FrontEnd() throws RemoteException {
     }
 
     public static void main(String[] args) {
@@ -25,7 +25,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     }
 
     @Override
-    public String[] list() throws RemoteException {
-        return new String[0];
+    public String[] list() {
+        return new String[]{"Hello", " ", "World", "!"};
     }
 }
