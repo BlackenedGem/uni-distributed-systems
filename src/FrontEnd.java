@@ -73,9 +73,10 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     // Attempts to retrieve a file server from the registry
     // Returns the stub if successful, otherwise null
     private ServerInterface getServerStub(int id) {
+        log("Retrieving stub for server" + id);
         try {
             ServerInterface stub = (ServerInterface) register.lookup(SERVER_RMI_NAME + id);
-            System.out.println("Retrieved stub for server " + id);
+            log("Retrieved stub for server " + id);
             return stub;
         } catch (RemoteException | NotBoundException e) {
             log("Could not retrieve file server " + id + " stub");
@@ -116,7 +117,10 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         List<String> sortedListings = new ArrayList<>(listings);
         Collections.sort(sortedListings);
-        return sortedListings.toArray(new String[sortedListings.size()]);
+        String[] returnArray = sortedListings.toArray(new String[sortedListings.size()]);
+
+        log("Listings retrieved, sending to clients");
+        return returnArray;
     }
 
     private void log(String msg) {

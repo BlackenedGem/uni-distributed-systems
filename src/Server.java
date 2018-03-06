@@ -87,7 +87,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             Files.walk(Paths.get(FILES_DIR))
                     .filter(Files::isRegularFile)
                     .forEach(path -> {
-                        String listing = path.toString().substring(Server.BASE_DIR.length());
+                        String listing = path.toString().substring(FILES_DIR.length());
                         listings.add(listing);
                     });
         } catch (IOException e) {
