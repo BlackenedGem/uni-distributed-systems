@@ -18,13 +18,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     private int id;
     private String FILES_DIR;
 
-    private Server(int id) throws RemoteException {
-        this.id = id;
-        this.FILES_DIR = BASE_DIR + id + "/";
-    }
+
 
     // Main entry functions
-
     public static void main(String[] args) {
         // Ensure argument length
         if (args.length == 0) {
@@ -33,13 +29,13 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         // Read arguments
-        int serverID = stringToPosInt(args[0], "Server ID must be a positive integer");
+        int serverID = Shared.stringToPosInt(args[0], "Server ID must be a positive integer");
         if (serverID == -1) {
             return;
         }
 
         String hostname;
-        if (args.length >=2) {
+        if (args.length >= 2) {
             hostname = args[1];
         } else {
             hostname = DEFAULT_RMI_HOSTNAME;
@@ -47,7 +43,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
         int port;
         if (args.length >= 3) {
-            port = stringToPosInt(args[2], "Port number must be a positive integer");
+            port = Shared.stringToPosInt(args[2], "Port number must be a positive integer");
 
             if (port == -1) {
                 System.out.println("Using default port of " + DEFAULT_RMI_PORT);
@@ -58,6 +54,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         // Initialise server
+        System.out.println("Initialising server with ID = " + serverID + " at " + hostname + ":" + port);
+
         try {
             Server obj = new Server(serverID);
 
@@ -73,26 +71,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
     }
 
-    // Converts a string to a positive integer
-    // Returns -1 if this could not be done
-    private static int stringToPosInt(String s, String errMsg) {
-        int val;
-
-        try {
-            val = Integer.parseInt(s);
-
-            if (val < 1) {
-                throw new NumberFormatException("Less than 1");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println(errMsg);
-            return -1;
-        }
-
-        return val;
-    }
-
     // Object functions
+    private Server(int id) throws RemoteException {
+        this.id = id;
+        this.FILES_DIR = BASE_DIR + id + "/";
+    }
 
     @Override
     public List<String> list() {
