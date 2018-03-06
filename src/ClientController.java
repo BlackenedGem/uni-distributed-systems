@@ -20,7 +20,7 @@ import java.util.function.UnaryOperator;
 public class ClientController {
     private static final String FRONTEND_RMI_NAME = "FrontEnd";
     private static final String DEFAULT_IP = "localhost";
-    private static final int DEFAULT_PORT = 1234;
+    private static final int DEFAULT_PORT = 1099;
     public static final String BASE_DIR = "client_files/";
 
     // Connection UI
@@ -51,9 +51,6 @@ public class ClientController {
         return null;
     };
 
-    // Connection info
-    private Client conn = null;
-
     @FXML
     public void initialize() {
         setUIState(false);
@@ -66,7 +63,7 @@ public class ClientController {
     }
 
     private void setUIState() {
-        setUIState(conn != null);
+        setUIState(frontEnd != null);
     }
 
     private void setUIState(boolean connected) {
@@ -99,12 +96,15 @@ public class ClientController {
         String hostname = textIP.getText();
         int port = Integer.parseInt(textPort.getText());
 
+        Log.log("Retrieving front end stub at " + hostname + ":" + port);
+
         Task<Boolean> task = new Task<Boolean>() {
             @Override protected Boolean call() {
                 // Attempt to connect to registry and retrieve stub
                 try {
                     Registry registry = LocateRegistry.getRegistry(hostname, port);
                     frontEnd = (FrontEndInterface) registry.lookup("FrontEnd");
+                    Log.log("Succesfully retrieved stub");
                     return true;
                 } catch (RemoteException | NotBoundException e) {
                     frontEnd = null;
