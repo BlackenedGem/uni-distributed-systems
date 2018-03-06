@@ -106,8 +106,9 @@ public class ClientController {
                     frontEnd = (FrontEndInterface) registry.lookup("FrontEnd");
                     Log.log("Succesfully retrieved stub");
                     return true;
+
                 } catch (RemoteException | NotBoundException e) {
-                    frontEnd = null;
+                    // Output message and disconnect if a failure occurs
                     Log.log(e.getMessage());
                     return false;
                 }
@@ -127,6 +128,34 @@ public class ClientController {
     }
 
     @FXML private void list() {
+        Log.log("Retrieving listings");
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override protected Boolean call() {
+                try {
+                    // Fetch listings and output
+                    String[] listings = frontEnd.list();
+
+                    if (listings.length == 0) {
+                        Log.log("Server contains no listings");
+                    } else {
+                        Log.log("Listings:");
+                        for (String listing : listings) {
+                            Log.log(listing);
+                        }
+                    }
+                    return true;
+
+                } catch (RemoteException e) {
+                    // Output message and disconnect if a failure occurs
+                    Log.log(e.getMessage());
+                    return false;
+                }
+            }
+        };
+
+        updateOnTaskEnd(task);
+        startTask(task);
     }
 
     @FXML private void quit() {
