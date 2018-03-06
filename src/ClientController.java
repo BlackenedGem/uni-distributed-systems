@@ -130,6 +130,9 @@ public class ClientController {
     }
 
     @FXML private void quit() {
+        frontEnd = null;
+        Log.log("Discarded stub reference from memory");
+        setUIState();
     }
 
     @FXML private void upload() {
