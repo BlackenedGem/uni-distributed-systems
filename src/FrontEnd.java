@@ -12,7 +12,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         try {
             FrontEnd obj = new FrontEnd();
 
-            System.out.println("Detected Local IP: " + InetAddress.getLocalHost().toString());
+            // System.out.println("Detected Local IP: " + InetAddress.getLocalHost().toString());
             // Bind the remote object's stub in the registry
             Registry register = LocateRegistry.getRegistry(1099);
             register.rebind("FrontEnd", obj);
