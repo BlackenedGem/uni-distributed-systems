@@ -1,4 +1,3 @@
-import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -7,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
+    // Constants
     private static final String DEFAULT_RMI_HOSTNAME = "localhost";
     private static final int DEFAULT_RMI_PORT = 1099;
 
@@ -14,6 +14,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     private static final String FRONTEND_RMI_NAME = "FrontEnd";
     private static final String SERVER_RMI_NAME = "FileServer";
 
+    // Object variables
     private Registry register;
     private List<ServerInterface> fileServers = new ArrayList<>();
 
@@ -42,12 +43,12 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         System.out.println("Initialising front end at " + hostname + ":" + port);
 
         try {
-            FrontEnd obj = new FrontEnd();
+            FrontEnd obj = new FrontEnd(hostname, port);
 
             // System.out.println("Detected Local IP: " + InetAddress.getLocalHost().toString());
             // Bind the remote object's stub in the registry
             Registry register = LocateRegistry.getRegistry(1099);
-            register.rebind("FrontEnd", obj);
+            register.rebind(FRONTEND_RMI_NAME, obj);
 
             System.out.println("Server ready");
         } catch (Exception e) {
@@ -56,11 +57,11 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
-    private FrontEnd() throws RemoteException {
+    private FrontEnd(String hostname, int port) throws RemoteException {
         log("Retrieving registry and file server stubs");
 
         // Initialize the registry
-        register = LocateRegistry.getRegistry(1099);
+        register = LocateRegistry.getRegistry(hostname, port);
 
         // Attempt to initialize servers
         for (int i = 1; i <= MAX_SERVERS; i++) {
@@ -104,11 +105,13 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         Set<String> listings = new HashSet<>();
 
+        int serversUsed = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
             ServerInterface server = fileServers.get(i);
 
             try {
                 listings.addAll(server.list());
+                serversUsed++;
             } catch (RemoteException e) {
                 log(e.getMessage());
                 log("Disconnected file server " + (i + 1));
@@ -119,7 +122,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         Collections.sort(sortedListings);
         String[] returnArray = sortedListings.toArray(new String[sortedListings.size()]);
 
-        log("Listings retrieved, sending to clients");
+        log("Listings retrieved from " + serversUsed + " servers, sending to client");
         return returnArray;
     }
 
