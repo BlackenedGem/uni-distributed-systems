@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server extends UnicastRemoteObject implements ServerInterface {
+    private static String SERVER_RMI_NAME = "FileServer";
     private static String BASE_DIR = "server_files_";
 
     private int id;
@@ -29,7 +30,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             // System.out.println("Detected Local IP: " + InetAddress.getLocalHost().toString());
             // Bind the remote object's stub in the registry
             Registry register = LocateRegistry.getRegistry(1099);
-            register.rebind("FileServer" + serverID, obj);
+            register.rebind(SERVER_RMI_NAME + serverID, obj);
 
             System.out.println("Server ready");
         } catch (Exception e) {
