@@ -10,13 +10,18 @@ import javafx.stage.StageStyle;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class ClientController {
-    private static String DEFAULT_IP = "localhost";
-    private static int DEFAULT_PORT = 1234;
-    public static String BASE_DIR = "client_files/";
+    private static final String FRONTEND_RMI_NAME = "FrontEnd";
+    private static final String DEFAULT_IP = "localhost";
+    private static final int DEFAULT_PORT = 1234;
+    public static final String BASE_DIR = "client_files/";
 
     // Connection UI
     @FXML private TextField textIP;
@@ -32,6 +37,9 @@ public class ClientController {
 
     // Listview
     @FXML private ListView<String> listView;
+
+    // FrontEnd connection
+    private FrontEndInterface frontEnd;
 
     // Formatter to restrict inputs to only numbers
     // https://stackoverflow.com/q/40472668
@@ -87,6 +95,27 @@ public class ClientController {
 
     @FXML
     private void connect() {
+        // Get IP/Port
+        String hostname = textIP.getText();
+        int port = Integer.parseInt(textPort.getText());
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override protected Boolean call() {
+                // Attempt to connect to registry and retrieve stub
+                try {
+                    Registry registry = LocateRegistry.getRegistry(hostname, port);
+                    frontEnd = (FrontEndInterface) registry.lookup("FrontEnd");
+                    return true;
+                } catch (RemoteException | NotBoundException e) {
+                    frontEnd = null;
+                    Log.log(e.getMessage());
+                    return false;
+                }
+            }
+        };
+
+        updateOnTaskEnd(task);
+        startTask(task);
     }
 
     @FXML
