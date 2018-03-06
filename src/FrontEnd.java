@@ -4,8 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     private static final String DEFAULT_RMI_HOSTNAME = "localhost";
@@ -57,8 +56,6 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
-
-
     private FrontEnd() throws RemoteException {
         log("Retrieving registry and file server stubs");
 
@@ -86,9 +83,40 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
+    // Iterates over the list of servers, and if any are null attempts to reconnect
+    // Sets them to null if reconnect fails
+    private void reconnectToDeadServers() {
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            ServerInterface server = fileServers.get(i);
+
+            if (server == null) {
+                log("Server " + (i + 1) + " is not connected, attempting to reconnect");
+                fileServers.set(i, getServerStub(i + 1));
+            }
+        }
+    }
+
     @Override
     public String[] list() {
-        return new String[]{"Hello", " ", "World", "!"};
+        log("Retrieving listings from servers");
+        reconnectToDeadServers();
+
+        Set<String> listings = new HashSet<>();
+
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            ServerInterface server = fileServers.get(i);
+
+            try {
+                listings.addAll(server.list());
+            } catch (RemoteException e) {
+                log(e.getMessage());
+                log("Disconnected file server " + (i + 1));
+            }
+        }
+
+        List<String> sortedListings = new ArrayList<>(listings);
+        Collections.sort(sortedListings);
+        return sortedListings.toArray(new String[sortedListings.size()]);
     }
 
     private void log(String msg) {
