@@ -100,14 +100,16 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
     @Override
     public String[] list() {
-        log("Retrieving listings from servers");
+        log("Received operation LIST. Checking server statuses first");
         reconnectToDeadServers();
+        log("Retrieving listings from servers");
 
         Set<String> listings = new HashSet<>();
 
         int serversUsed = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
             ServerInterface server = fileServers.get(i);
+            if (server == null) { continue; }
 
             try {
                 listings.addAll(server.list());
