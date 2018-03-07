@@ -2,13 +2,10 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Callback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -129,6 +126,38 @@ public class ClientController {
 
     @FXML
     private void download() {
+        // Get filename
+        Optional<String> result = getInput("Enter filename", "File to download from server:", "");
+        if (!result.isPresent()) {
+            return;
+        }
+
+        Task<DownloadedFile> task = new Task<DownloadedFile>() {
+            @Override protected DownloadedFile call() {
+                try {
+                    byte[] data = frontEnd.download(result.get());
+                    return new DownloadedFile(false, data);
+                } catch (RemoteException e) {
+                    // Output message if a failure occurs
+                    // Disconnect is done by setting the rmiError flag of DownloadedFile to true
+                    Log.log(e.getMessage());
+                    return new DownloadedFile(true, null);
+                }
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            DownloadedFile df = task.getValue();
+            if (df.hadRMIError()) {
+                quit();
+                return;
+            } else if (df.containsData()) {
+                saveFile(result.get(), df.getData());
+            }
+
+            setUIState();
+        });
+        startTask(task);
     }
 
     @FXML private void list() {
@@ -309,10 +338,10 @@ class Log {
 
 class DownloadedFile {
     private byte[] data;
-    private boolean socketError;
+    private boolean rmiError;
 
-    DownloadedFile(boolean socketError, byte[] data) {
-        this.socketError = socketError;
+    DownloadedFile(boolean rmiError, byte[] data) {
+        this.rmiError = rmiError;
         this.data = data;
     }
 
@@ -320,8 +349,8 @@ class DownloadedFile {
         return data;
     }
 
-    public boolean hadSocketError() {
-        return socketError;
+    public boolean hadRMIError() {
+        return rmiError;
     }
 
     public boolean containsData() {
