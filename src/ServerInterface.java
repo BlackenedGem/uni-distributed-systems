@@ -4,4 +4,5 @@ import java.util.List;
 
 public interface ServerInterface extends Remote {
     List<String> list() throws RemoteException;
+    boolean upload(String filename, byte[] data) throws RemoteException;
 }

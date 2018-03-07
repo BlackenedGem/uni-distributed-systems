@@ -214,7 +214,8 @@ public class ClientController {
 
                 // Send file through front end
                 try {
-                    frontEnd.upload(resultName.get(), bytes, highReliability);
+                    String response = frontEnd.upload(resultName.get(), bytes, highReliability);
+                    Log.log(response);
                 } catch (RemoteException e) {
                     // Output message and disconnect if a failure occurs
                     Log.log(e.getMessage());

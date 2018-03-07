@@ -18,8 +18,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     private int id;
     private String FILES_DIR;
 
-
-
     // Main entry functions
     public static void main(String[] args) {
         // Ensure argument length
