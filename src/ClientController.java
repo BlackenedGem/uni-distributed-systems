@@ -13,6 +13,7 @@ import javafx.util.Callback;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -199,6 +200,27 @@ public class ClientController {
 
         Task<Boolean> task = new Task<Boolean>() {
             @Override protected Boolean call() {
+                // Read file before sending
+                Log.log("Reading file from disk");
+                byte[] bytes;
+                try {
+                    bytes = Files.readAllBytes(file.toPath());
+                } catch (IOException e) {
+                    // Handle error
+                    // Note that we still return true because a client error has occurred, not an RMI error
+                    Log.log("Error reading file from disk. " + e.getMessage());
+                    return true;
+                }
+
+                // Send file through front end
+                try {
+                    frontEnd.upload(resultName.get(), bytes, highReliability);
+                } catch (RemoteException e) {
+                    // Output message and disconnect if a failure occurs
+                    Log.log(e.getMessage());
+                    return false;
+                }
+
                 return true;
             }
         };

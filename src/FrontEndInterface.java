@@ -3,5 +3,5 @@ import java.rmi.RemoteException;
 
 public interface FrontEndInterface extends Remote {
     String[] list() throws RemoteException;
-    String upload(String filename, byte[] data, boolean highReliability);
+    String upload(String filename, byte[] data, boolean highReliability) throws RemoteException;
 }
