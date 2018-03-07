@@ -17,7 +17,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     private static final int DEFAULT_RMI_PORT = 1099;
     private static final String BASE_DIR = "server_files_";
 
-    private int id;
     private String FILES_DIR;
 
     // Main entry functions
@@ -73,8 +72,26 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     // Object functions
     private Server(int id) throws RemoteException {
-        this.id = id;
         this.FILES_DIR = BASE_DIR + id + "/";
+    }
+
+    @Override
+    public byte[] download(String filename) {
+        // Check if file exists
+        File file = new File(FILES_DIR + filename);
+        if (!file.exists()) {
+            log("The file \"" + filename + "\" does not exist on the server");
+            return null;
+        }
+
+        // Read file from disk and return
+        log("Reading file from disk");
+        try {
+            return Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            log("Could not read '" + file.toString() + "' from disk. " + e.getMessage());
+            return null;
+        }
     }
 
     @Override
