@@ -115,7 +115,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         int numServers = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
             checkServer(i);
-            ServerInterface server = fileServers.get(id);
+            ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
             // Upload
@@ -313,7 +313,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to %,d servers\n%,d bytes (x%,d) uploaded in %,.2fs", numServers, data.length, numServers, timeTaken);
+        return String.format("Uploaded file to %,d/%,d servers\n%,d bytes (x%,d) uploaded in %,.2fs", numServers, MAX_SERVERS, data.length, numServers, timeTaken);
     }
 
     // Uploads data to an individual server
