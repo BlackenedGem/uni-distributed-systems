@@ -117,6 +117,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         int curServer = startServer;
         do {
+            // Retrieve stub and download
             checkServer(curServer);
             ServerInterface server = fileServers.get(curServer);
 
@@ -145,8 +146,10 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         log("Received operation LIST. Checking server statuses first");
         log("Retrieving listings from servers");
 
+        // Store listings in a set to remove duplicates
         Set<String> listings = new HashSet<>();
 
+        // Iterate over servers. Fetch listings and add to set
         int serversUsed = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
             checkServer(i);
@@ -161,6 +164,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             }
         }
 
+        // Convert set to sorted list
         List<String> sortedListings = new ArrayList<>(listings);
         Collections.sort(sortedListings);
         String[] returnArray = sortedListings.toArray(new String[sortedListings.size()]);
@@ -185,11 +189,14 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         log("Retrieving listings from servers to determine server with smallest number of files");
         int minIndex = -1;
         int minFiles = Integer.MAX_VALUE;
+
+        // Iterate over servers
         for (int i = 0; i < MAX_SERVERS; i++) {
             checkServer(i);
             ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
+            // If this server has less files then designate this server as the one to upload to
             try {
                 int numFiles = server.list().size();
                 if (numFiles < minFiles) {
@@ -219,7 +226,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             return msg;
         }
 
-        // Get stats
+        // Get stats and return message
         long endTime = System.currentTimeMillis();
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
@@ -231,12 +238,14 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         // start timer
         long startTime = System.currentTimeMillis();
 
+        // Iterate over servers. Keep track of the number of servers that were uploaded to
         int numServers = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
             checkServer(i);
             ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
+            // Upload
             try {
                 server.upload(filename, data);
                 numServers++;
@@ -245,6 +254,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             }
         }
 
+        // Return status message
         if (numServers == 0) {
             return "Could not upload file to any servers";
         }
