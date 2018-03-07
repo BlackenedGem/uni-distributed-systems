@@ -74,7 +74,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     // Attempts to retrieve a file server from the registry
     // Returns the stub if successful, otherwise null
     private ServerInterface getServerStub(int id) {
-        log("Retrieving stub for server" + id);
+        log("Retrieving stub for server " + id);
         try {
             ServerInterface stub = (ServerInterface) register.lookup(SERVER_RMI_NAME + id);
             log("Retrieved stub for server " + id);
