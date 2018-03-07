@@ -193,7 +193,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         long startTime = System.currentTimeMillis();
 
         // Get the server with the smallest number of files, not file size! (as per spec)
-        log("Retrieving listings from servers to determine server with smallest number of files");
+        log("Retrieving listings from servers to determine order to attempt upload");
 
         // Store a list of pairs which store the number of files per file server (file server - number of files)
         // If an error occurs querying a server then they will not be added to this list
@@ -221,31 +221,37 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
 
         // Sort servers by number of files (ascending order)
-        filesOnServers.sort((pair1, pair2) -> pair1.getValue() - pair2.getValue());
+        filesOnServers.sort(Comparator.comparingInt(Pair::getValue));
         for (Pair<Integer, Integer> pair : filesOnServers) {
             log(pair.getKey() + " - " + pair.getValue());
         }
 
-        /*
-        // Upload file to server found
-        log("Uploading file to server " + (minIndex + 1));
-        ServerInterface server = fileServers.get(minIndex);
-        try {
-            server.upload(filename, data);
-        } catch (RemoteException e) {
-            String msg = "Error uploading file to server (selected server " + (minIndex + 1);
-            log(msg);
-            return msg;
+        // Try to upload to servers
+        log(String.format("Found %,d servers available to upload to", filesOnServers.size()));
+
+        // Upload file to servers found until success
+        int curIndex = 0;
+        while (curIndex < filesOnServers.size()) {
+            int curServer = filesOnServers.get(curIndex).getKey();
+            log("Uploading file to server " + (curServer + 1));
+
+            if (uploadToServer(curServer, filename, data)) {
+                break;
+            }
+
+            curIndex++;
         }
-        */
+
+        if (curIndex == filesOnServers.size()) {
+            return "Could not upload file to any servers";
+        }
 
         // Get stats and return message
         long endTime = System.currentTimeMillis();
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        int minIndex = 1;
-        return String.format("Uploaded file to server %,d\n%,d bytes uploaded in %,.2fs", minIndex + 1, data.length, timeTaken);
+        return String.format("Uploaded file to server %,d\n%,d bytes uploaded in %,.2fs", filesOnServers.get(curIndex).getKey(), data.length, timeTaken);
     }
 
     private String uploadAll(String filename, byte[] data) {
@@ -255,16 +261,8 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         // Iterate over servers. Keep track of the number of servers that were uploaded to
         int numServers = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
-            checkServer(i);
-            ServerInterface server = fileServers.get(i);
-            if (server == null) { continue; }
-
-            // Upload
-            try {
-                server.upload(filename, data);
+            if (uploadToServer(i, filename, data)) {
                 numServers++;
-            } catch (RemoteException e) {
-                disconnectServer(i, e);
             }
         }
 
@@ -279,5 +277,22 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         timeTaken /= 1000;
 
         return String.format("Uploaded file to %,d servers\n%,d bytes (x%,d) uploaded in %,.2fs", numServers, data.length, numServers, timeTaken);
+    }
+
+    // Uploads data to an individual server
+    // Returns true if file successfully uploaded
+    private boolean uploadToServer(int id, String filename, byte[] data) {
+        checkServer(id);
+        ServerInterface server = fileServers.get(id);
+        if (server == null) { return false; }
+
+        // Upload
+        try {
+            return server.upload(filename, data);
+        } catch (RemoteException e) {
+            log("Error uploading file to server " + (id + 1));
+            disconnectServer(id, e);
+            return false;
+        }
     }
 }
