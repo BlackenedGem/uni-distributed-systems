@@ -77,7 +77,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     @Override
     public int delete(String filename) {
-        log("Client is requesting to delete a file");
+        log("Received request to delete: " + filename);
 
         // Server returns 1 or -1 based on whether or not the file exists
         File file = new File(FILES_DIR + filename);
@@ -98,6 +98,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     @Override
     public byte[] download(String filename) {
+        log("Received request to download: " + filename);
+
         // Check if file exists
         File file = new File(FILES_DIR + filename);
         if (!file.exists()) {
@@ -108,7 +110,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         // Read file from disk and return
         log("Reading file from disk");
         try {
-            return Files.readAllBytes(file.toPath());
+            byte[] data = Files.readAllBytes(file.toPath());
+            log("Data read from disk and returned");
+            return data;
         } catch (IOException e) {
             log("Could not read '" + file.toString() + "' from disk. " + e.getMessage());
             return null;
@@ -117,7 +121,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     @Override
     public List<String> list() {
-        log("Sending listings to client");
+        log("Received request to obtain listings");
         List<String> listings = new ArrayList<>();
 
         // Get listings by traversing through source directory
@@ -133,18 +137,23 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             return new ArrayList<>();
         }
 
+        log("Returned listings");
         return listings;
     }
 
     @Override
     public boolean upload(String filename, byte[] data) {
-        // Convert filename to
+        log("Received request to upload a file to: " + filename);
+
+        // Convert filename to full path and make directories
         File outFile = new File(FILES_DIR + filename);
         //noinspection ResultOfMethodCallIgnored
         outFile.getParentFile().mkdirs();
 
+        // Save data
         try (FileOutputStream stream = new FileOutputStream(outFile)) {
             stream.write(data);
+            log("File saved to disk");
             return true;
         } catch (IOException e) {
             log("Error writing file to disk");
