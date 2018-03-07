@@ -77,7 +77,23 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     @Override
     public int delete(String filename) {
-        return 0;
+        log("Client is requesting to delete a file");
+
+        // Server returns 1 or -1 based on whether or not the file exists
+        File file = new File(FILES_DIR + filename);
+        if (!file.exists()) {
+            log("File doesn't exist: " + file.toString());
+            return -1;
+        }
+
+        // Delete file
+        if (file.delete()) {
+            log("File deleted");
+            return 1;
+        } else {
+            log("Error deleting file");
+            return 0;
+        }
     }
 
     @Override
