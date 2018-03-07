@@ -1,3 +1,5 @@
+import javafx.util.Pair;
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -192,8 +194,10 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         // Get the server with the smallest number of files, not file size! (as per spec)
         log("Retrieving listings from servers to determine server with smallest number of files");
-        int minIndex = -1;
-        int minFiles = Integer.MAX_VALUE;
+
+        // Store a list of pairs which store the number of files per file server (file server - number of files)
+        // If an error occurs querying a server then they will not be added to this list
+        List<Pair<Integer, Integer>> filesOnServers = new ArrayList<>();
 
         // Iterate over servers
         for (int i = 0; i < MAX_SERVERS; i++) {
@@ -201,25 +205,28 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
-            // If this server has less files then designate this server as the one to upload to
             try {
-                int numFiles = server.list().size();
-                if (numFiles < minFiles) {
-                    minIndex = i;
-                    minFiles = numFiles;
-                }
+                // Find the number of files on the server and add it to the list
+                filesOnServers.add(new Pair<>(i, server.list().size()));
             } catch (RemoteException e) {
                 disconnectServer(i, e);
             }
         }
 
         // No servers found
-        if (minIndex == -1) {
+        if (filesOnServers.size() == 0) {
             String msg = "No servers could be found to upload to";
             log(msg);
             return msg;
         }
 
+        // Sort servers by number of files (ascending order)
+        filesOnServers.sort((pair1, pair2) -> pair1.getValue() - pair2.getValue());
+        for (Pair<Integer, Integer> pair : filesOnServers) {
+            log(pair.getKey() + " - " + pair.getValue());
+        }
+
+        /*
         // Upload file to server found
         log("Uploading file to server " + (minIndex + 1));
         ServerInterface server = fileServers.get(minIndex);
@@ -230,13 +237,15 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             log(msg);
             return msg;
         }
+        */
 
         // Get stats and return message
         long endTime = System.currentTimeMillis();
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to %,d servers\n%,d bytes uploaded in %,.2fs", minIndex + 1, data.length, timeTaken);
+        int minIndex = 1;
+        return String.format("Uploaded file to server %,d\n%,d bytes uploaded in %,.2fs", minIndex + 1, data.length, timeTaken);
     }
 
     private String uploadAll(String filename, byte[] data) {
