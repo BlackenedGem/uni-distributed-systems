@@ -96,14 +96,6 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
-    // Iterates over the list of servers, and if any are null attempts to reconnect
-    // Sets them to null if reconnect fails
-    private void checkAllServers() {
-        for (int i = 0; i < MAX_SERVERS; i++) {
-            checkServer(i);
-        }
-    }
-
     private void disconnectServer(int id, RemoteException e) {
         log(e.getMessage());
         log("Disconnected server " + (id + 1));
@@ -151,13 +143,13 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     @Override
     public String[] list() {
         log("Received operation LIST. Checking server statuses first");
-        checkAllServers();
         log("Retrieving listings from servers");
 
         Set<String> listings = new HashSet<>();
 
         int serversUsed = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
+            checkServer(i);
             ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
@@ -194,6 +186,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         int minIndex = -1;
         int minFiles = Integer.MAX_VALUE;
         for (int i = 0; i < MAX_SERVERS; i++) {
+            checkServer(i);
             ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
@@ -240,6 +233,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         int numServers = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
+            checkServer(i);
             ServerInterface server = fileServers.get(i);
             if (server == null) { continue; }
 
