@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -96,7 +98,22 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         return listings;
     }
 
+    @Override
+    public boolean upload(String filename, byte[] data) {
+        // Convert filename to
+        File outFile = new File(FILES_DIR + filename);
+        //noinspection ResultOfMethodCallIgnored
+        outFile.getParentFile().mkdirs();
 
+        try (FileOutputStream stream = new FileOutputStream(outFile)) {
+            stream.write(data);
+            return true;
+        } catch (IOException e) {
+            log("Error writing file to disk");
+            log(e.getMessage());
+            return false;
+        }
+    }
 
     private void log(String msg) {
         System.out.println(msg);
