@@ -76,6 +76,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     @Override
+    public int delete(String filename) {
+        return 0;
+    }
+
+    @Override
     public byte[] download(String filename) {
         // Check if file exists
         File file = new File(FILES_DIR + filename);

@@ -3,6 +3,12 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface ServerInterface extends Remote {
+    // Returns a status code indicating if the file was deleted
+    // -1 - File does not exist
+    // 0 - Internal error (ie. IOException)
+    // 1 - File was deleted
+    int delete(String filename) throws RemoteException;
+
     // Response is null if file couldn't be found/another error occurred
     byte[] download(String filename) throws RemoteException;
 
