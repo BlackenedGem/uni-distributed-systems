@@ -2,10 +2,13 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Callback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -176,10 +179,23 @@ public class ClientController {
         }
 
         // Get filename
-        Optional<String> result = getInput("Enter the filename to save on the server", "Filename:", file.getName());
-        if (!result.isPresent()) {
+        Optional<String> resultName = getInput("Enter the filename to save on the server", "Filename:", file.getName());
+        if (!resultName.isPresent()) {
             return;
         }
+
+        // Get high priority or not?
+        ButtonType yes = new ButtonType("Yes");
+        ButtonType no = new ButtonType("No");
+
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+        a.setTitle("File reliability");
+        a.setHeaderText("Upload file with high reliability?");
+        a.getButtonTypes().setAll(yes, no);
+        a.initOwner(getStage());
+        a.initModality(Modality.WINDOW_MODAL);
+        Optional<ButtonType> resultMode = a.showAndWait();
+        boolean highReliability = resultMode.isPresent() && resultMode.get() == yes;
 
         Task<Boolean> task = new Task<Boolean>() {
             @Override protected Boolean call() {
