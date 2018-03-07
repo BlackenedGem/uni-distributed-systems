@@ -17,6 +17,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     // Object variables
     private Registry register;
     private List<ServerInterface> fileServers = new ArrayList<>();
+    private Random random = new Random();
 
     public static void main(String[] args) {
         // Read arguments
@@ -85,16 +86,21 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
+    // If a server is null then attempts to reconnect to it
+    private void checkServer(int id) {
+        ServerInterface server = fileServers.get(id);
+
+        if (server == null) {
+            log("Server " + (id + 1) + " is not connected, attempting to reconnect");
+            fileServers.set(id, getServerStub(id + 1));
+        }
+    }
+
     // Iterates over the list of servers, and if any are null attempts to reconnect
     // Sets them to null if reconnect fails
-    private void reconnectToDeadServers() {
+    private void checkAllServers() {
         for (int i = 0; i < MAX_SERVERS; i++) {
-            ServerInterface server = fileServers.get(i);
-
-            if (server == null) {
-                log("Server " + (i + 1) + " is not connected, attempting to reconnect");
-                fileServers.set(i, getServerStub(i + 1));
-            }
+            checkServer(i);
         }
     }
 
@@ -104,9 +110,45 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     }
 
     @Override
+    public byte[] download(String filename) {
+        // Implement basic load sharing by randomly selecting the server to download from
+        // If this fails we then go to the next server, and then the next etc.
+        // We stop when we get back to the starting server
+        int startServer = random.nextInt(MAX_SERVERS);
+        log("Received operation DWLD. Attempting to download file '" + filename + "' starting at server " + startServer);
+
+        int curServer = startServer;
+        do {
+            checkServer(curServer);
+            ServerInterface server = fileServers.get(curServer);
+
+            if (server != null) {
+                try {
+                    log("Downloading file from server " + (curServer + 1));
+                    return server.download(filename);
+                } catch (RemoteException e) {
+                    log(e.getMessage());
+                    log("Disconnected server " + (curServer + 1));
+                    fileServers.set(curServer, null);
+                }
+            }
+
+
+            // Try next server
+            curServer++;
+            if (curServer >= MAX_SERVERS) {
+                curServer = 0;
+            }
+        } while (curServer != startServer);
+
+        log("No servers could be downloaded from");
+        return null;
+    }
+
+    @Override
     public String[] list() {
         log("Received operation LIST. Checking server statuses first");
-        reconnectToDeadServers();
+        checkAllServers();
         log("Retrieving listings from servers");
 
         Set<String> listings = new HashSet<>();
@@ -122,6 +164,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             } catch (RemoteException e) {
                 log(e.getMessage());
                 log("Disconnected file server " + (i + 1));
+                fileServers.set(i, null);
             }
         }
 
