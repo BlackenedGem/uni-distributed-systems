@@ -98,6 +98,11 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
+    // Output message to console, so that we can change logging method if needed without having to change all logging statements
+    private void log(String msg) {
+        System.out.println(msg);
+    }
+
     @Override
     public String[] list() {
         log("Received operation LIST. Checking server statuses first");
@@ -128,7 +133,8 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         return returnArray;
     }
 
-    private void log(String msg) {
-        System.out.println(msg);
+    @Override
+    public String upload(String filename, byte[] data, boolean highReliability) {
+        return "";
     }
 }

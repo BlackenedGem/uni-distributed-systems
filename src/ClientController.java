@@ -103,7 +103,7 @@ public class ClientController {
                 // Attempt to connect to registry and retrieve stub
                 try {
                     Registry registry = LocateRegistry.getRegistry(hostname, port);
-                    frontEnd = (FrontEndInterface) registry.lookup("FrontEnd");
+                    frontEnd = (FrontEndInterface) registry.lookup(FRONTEND_RMI_NAME);
                     Log.log("Succesfully retrieved stub");
                     return true;
 
@@ -165,6 +165,30 @@ public class ClientController {
     }
 
     @FXML private void upload() {
+        // Get file
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Select file");
+        fc.setInitialDirectory(new File(BASE_DIR));
+        File file = fc.showOpenDialog(getStage());
+
+        if (file == null) {
+            return;
+        }
+
+        // Get filename
+        Optional<String> result = getInput("Enter the filename to save on the server", "Filename:", file.getName());
+        if (!result.isPresent()) {
+            return;
+        }
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override protected Boolean call() {
+                return true;
+            }
+        };
+
+        updateOnTaskEnd(task);
+        startTask(task);
     }
 
     private void saveFile(String suggestedName, byte[] data) {
