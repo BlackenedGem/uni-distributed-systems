@@ -135,6 +135,65 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
     @Override
     public String upload(String filename, byte[] data, boolean highReliability) {
-        return "";
+        log("Received operation UPLD. Checking server statuses first");
+
+        // start timer
+        long startTime = System.currentTimeMillis();
+
+        // Use a seperate method if we're uploading with high reliability
+        if (highReliability) {
+            return uploadAll(filename, data);
+        }
+
+        // Get the server with the smallest number of files, not file size! (as per spec)
+        log("Retrieving listings from servers to determine server with smallest number of files");
+        int minIndex = -1;
+        int minFiles = Integer.MAX_VALUE;
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            ServerInterface server = fileServers.get(i);
+            if (server == null) {
+                continue;
+            }
+
+            try {
+                int numFiles = server.list().size();
+                if (numFiles < minFiles) {
+                    minIndex = i;
+                    minFiles = numFiles;
+                }
+            } catch (RemoteException e) {
+                log(e.getMessage());
+                log("Disconnected file server " + (i + 1));
+            }
+        }
+
+        // No servers found
+        if (minIndex == -1) {
+            String msg = "No servers could be found to upload to";
+            log(msg);
+            return msg;
+        }
+
+        // Upload file to server found
+        log("Uploading file to server " + (minIndex + 1));
+        ServerInterface server = fileServers.get(minIndex);
+        try {
+            server.upload(filename, data);
+        } catch (RemoteException e) {
+            String msg = "Error uploading file to server (selected server " + (minIndex + 1);
+            log(msg);
+            return msg;
+        }
+
+        // Get stats
+        long endTime = System.currentTimeMillis();
+        double timeTaken = (endTime - startTime);
+        timeTaken /= 1000;
+
+        return String.format("Uploaded file to %,d\n%,d bytes uploaded in %,.2fs", minIndex + 1, data.length, timeTaken);
+    }
+
+    private String uploadAll(String filename, byte[] data) {
+        return "Test";
     }
 }
