@@ -222,9 +222,6 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         // Sort servers by number of files (ascending order)
         filesOnServers.sort(Comparator.comparingInt(Pair::getValue));
-        for (Pair<Integer, Integer> pair : filesOnServers) {
-            log(pair.getKey() + " - " + pair.getValue());
-        }
 
         // Try to upload to servers
         log(String.format("Found %,d servers available to upload to", filesOnServers.size()));
