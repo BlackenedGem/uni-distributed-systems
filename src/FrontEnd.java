@@ -188,7 +188,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to %,d\n%,d bytes uploaded in %,.2fs", minIndex + 1, data.length, timeTaken);
+        return String.format("Uploaded file to %,d servers\n%,d bytes uploaded in %,.2fs", minIndex + 1, data.length, timeTaken);
     }
 
     private String uploadAll(String filename, byte[] data) {
@@ -218,6 +218,6 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to %,d servers\n%,d (%,d) bytes uploaded in %,.2fs", numServers, data.length, numServers, timeTaken);
+        return String.format("Uploaded file to %,d servers\n%,d bytes (x%,d) uploaded in %,.2fs", numServers, data.length, numServers, timeTaken);
     }
 }
