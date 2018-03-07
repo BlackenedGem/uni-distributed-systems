@@ -15,6 +15,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -122,6 +123,69 @@ public class ClientController {
 
     @FXML
     private void delete() {
+        // Get the filename to delete
+        Optional<String> result = getInput("Choose file to delete", "Enter filename:", "");
+        if (!result.isPresent()) {
+            return;
+        }
+
+        Task<Integer> task1 = new Task<Integer>() {
+            @Override protected Integer call() {
+                try {
+                    String[] listings = frontEnd.list();
+                    if (Arrays.asList(listings).contains(result.get())) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                } catch (RemoteException e) {
+                    Log.log(e.getMessage());
+                    return 0;
+                }
+            }
+        };
+
+        task1.setOnSucceeded(event -> {
+            // If response is 0 then a remote exception error occurred
+            if (task1.getValue() == 0) {
+                quit();
+                return;
+            } else if (task1.getValue() == -1) {
+                setUIState();
+                return;
+            }
+
+            // If the file exists then prompt user to delete
+            Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+            a.setTitle("Confirm");
+            a.setHeaderText("Delete file from all servers?");
+            Optional<ButtonType> result2 = a.showAndWait();
+
+            // Return if user does not confirm
+            if (!(result2.isPresent() && result2.get() == ButtonType.OK)) {
+                setUIState();
+                return;
+            }
+
+            // Create a new task to send the confirmation
+            Task<Boolean> task2 = new Task<Boolean>() {
+                @Override protected Boolean call() {
+                    try {
+                        Log.log(frontEnd.delete(result.get()));
+                        return true;
+                    } catch (RemoteException e) {
+                        Log.log(e.getMessage());
+                        return false;
+                    }
+                }
+            };
+
+            // Start the task
+            updateOnTaskEnd(task2);
+            startTask(task2);
+        });
+
+        startTask(task1);
     }
 
     @FXML
@@ -162,7 +226,8 @@ public class ClientController {
         startTask(task);
     }
 
-    @FXML private void list() {
+    @FXML
+    private void list() {
         Log.log("Retrieving listings");
 
         Task<Boolean> task = new Task<Boolean>() {
@@ -193,13 +258,15 @@ public class ClientController {
         startTask(task);
     }
 
-    @FXML private void quit() {
+    @FXML
+    private void quit() {
         frontEnd = null;
         Log.log("Discarded stub reference from memory");
         setUIState();
     }
 
-    @FXML private void upload() {
+    @FXML
+    private void upload() {
         // Get file
         FileChooser fc = new FileChooser();
         fc.setTitle("Select file");
