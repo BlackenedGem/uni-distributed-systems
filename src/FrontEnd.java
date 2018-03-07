@@ -104,6 +104,12 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
     }
 
+    private void disconnectServer(int id, RemoteException e) {
+        log(e.getMessage());
+        log("Disconnected server " + (id + 1));
+        fileServers.set(id, null);
+    }
+
     // Output message to console, so that we can change logging method if needed without having to change all logging statements
     private void log(String msg) {
         System.out.println(msg);
@@ -127,12 +133,9 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
                     log("Downloading file from server " + (curServer + 1));
                     return server.download(filename);
                 } catch (RemoteException e) {
-                    log(e.getMessage());
-                    log("Disconnected server " + (curServer + 1));
-                    fileServers.set(curServer, null);
+                    disconnectServer(curServer, e);
                 }
             }
-
 
             // Try next server
             curServer++;
@@ -162,9 +165,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
                 listings.addAll(server.list());
                 serversUsed++;
             } catch (RemoteException e) {
-                log(e.getMessage());
-                log("Disconnected file server " + (i + 1));
-                fileServers.set(i, null);
+                disconnectServer(i, e);
             }
         }
 
@@ -203,8 +204,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
                     minFiles = numFiles;
                 }
             } catch (RemoteException e) {
-                log(e.getMessage());
-                log("Disconnected file server " + (i + 1));
+                disconnectServer(i, e);
             }
         }
 
@@ -247,8 +247,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
                 server.upload(filename, data);
                 numServers++;
             } catch (RemoteException e) {
-                log(e.getMessage());
-                log("Disconnected file server " + (i + 1));
+                disconnectServer(i, e);
             }
         }
 
