@@ -110,6 +110,35 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     }
 
     @Override
+    public String delete(String filename) {
+        // Iterate over servers. Keep track of the number of servers that we deleted from
+        int numServers = 0;
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            checkServer(i);
+            ServerInterface server = fileServers.get(id);
+            if (server == null) { continue; }
+
+            // Upload
+            try {
+                if (server.delete(filename) == 1) {
+                    numServers++;
+                }
+            } catch (RemoteException e) {
+                disconnectServer(i, e);
+            }
+        }
+
+        // Return status message
+        if (numServers == 0) {
+            return "Could not delete file from any servers";
+        } else if (numServers == MAX_SERVERS) {
+            return "Delete file from all servers";
+        } else {
+            return String.format("Deleted file from %,d/%,d servers", numServers, MAX_SERVERS);
+        }
+    }
+
+    @Override
     public byte[] download(String filename) {
         // Implement basic load sharing by randomly selecting the server to download from
         // If this fails we then go to the next server, and then the next etc.
