@@ -101,6 +101,9 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     private void disconnectServer(int id, RemoteException e) {
         log(e.getMessage());
         log("Disconnected server " + (id + 1));
+
+        // Remove entry from the register. Disabled for now, in case file server is still running succesfully and error was one that was not expected
+        // try { register.unbind(SERVER_RMI_NAME + (id + 1)); } catch (RemoteException | NotBoundException ignored) {}
         fileServers.set(id, null);
     }
 
