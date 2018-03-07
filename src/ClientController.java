@@ -153,6 +153,8 @@ public class ClientController {
                 return;
             } else if (df.containsData()) {
                 saveFile(result.get(), df.getData());
+            } else {
+                Log.log("File does not exist on the available servers (or an internal server error occurred)");
             }
 
             setUIState();
