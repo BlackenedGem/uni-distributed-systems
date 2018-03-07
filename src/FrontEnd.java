@@ -229,6 +229,17 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         // Try to upload to servers
         log(String.format("Found %,d servers available to upload to", filesOnServers.size()));
 
+        // Log messages
+        if (filesOnServers.size() > 0) {
+            List<String> filesOnServersString = new ArrayList<>();
+            for (Pair<Integer, Integer> pair : filesOnServers) {
+                filesOnServersString.add((pair.getKey() + 1) + " (" + pair.getValue() + ")");
+            }
+
+            log("Uploading files");
+            log("Server order (# of files): " + String.join(", ", filesOnServersString));
+        }
+
         // Upload file to servers found until success
         int curIndex = 0;
         while (curIndex < filesOnServers.size()) {
@@ -251,7 +262,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to server %,d\n%,d bytes uploaded in %,.2fs", filesOnServers.get(curIndex).getKey(), data.length, timeTaken);
+        return String.format("Uploaded file to server %,d\n%,d bytes uploaded in %,.2fs", filesOnServers.get(curIndex).getKey() + 1, data.length, timeTaken);
     }
 
     private String uploadAll(String filename, byte[] data) {
