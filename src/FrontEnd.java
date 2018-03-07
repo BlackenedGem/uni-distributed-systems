@@ -137,13 +137,13 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     public String upload(String filename, byte[] data, boolean highReliability) {
         log("Received operation UPLD. Checking server statuses first");
 
-        // start timer
-        long startTime = System.currentTimeMillis();
-
         // Use a seperate method if we're uploading with high reliability
         if (highReliability) {
             return uploadAll(filename, data);
         }
+
+        // start timer
+        long startTime = System.currentTimeMillis();
 
         // Get the server with the smallest number of files, not file size! (as per spec)
         log("Retrieving listings from servers to determine server with smallest number of files");
@@ -151,9 +151,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         int minFiles = Integer.MAX_VALUE;
         for (int i = 0; i < MAX_SERVERS; i++) {
             ServerInterface server = fileServers.get(i);
-            if (server == null) {
-                continue;
-            }
+            if (server == null) { continue; }
 
             try {
                 int numFiles = server.list().size();
@@ -194,6 +192,32 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     }
 
     private String uploadAll(String filename, byte[] data) {
-        return "Test";
+        // start timer
+        long startTime = System.currentTimeMillis();
+
+        int numServers = 0;
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            ServerInterface server = fileServers.get(i);
+            if (server == null) { continue; }
+
+            try {
+                server.upload(filename, data);
+                numServers++;
+            } catch (RemoteException e) {
+                log(e.getMessage());
+                log("Disconnected file server " + (i + 1));
+            }
+        }
+
+        if (numServers == 0) {
+            return "Could not upload file to any servers";
+        }
+
+        // Get stats
+        long endTime = System.currentTimeMillis();
+        double timeTaken = (endTime - startTime);
+        timeTaken /= 1000;
+
+        return String.format("Uploaded file to %,d servers\n%,d (%,d) bytes uploaded in %,.2fs", numServers, data.length, numServers, timeTaken);
     }
 }
