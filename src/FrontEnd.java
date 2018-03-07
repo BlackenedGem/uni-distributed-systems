@@ -113,7 +113,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         // If this fails we then go to the next server, and then the next etc.
         // We stop when we get back to the starting server
         int startServer = random.nextInt(MAX_SERVERS);
-        log("Received operation DWLD. Attempting to download file '" + filename + "' starting at server " + startServer);
+        log("Received operation DWLD. Attempting to download file '" + filename + "' starting at server " + (startServer + 1));
 
         int curServer = startServer;
         do {
@@ -124,7 +124,12 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             if (server != null) {
                 try {
                     log("Downloading file from server " + (curServer + 1));
-                    return server.download(filename);
+                    byte[] data = server.download(filename);
+                    if (data != null) {
+                        return data;
+                    } else {
+                        log("Server did not contain the file (or an internal error occurred)");
+                    }
                 } catch (RemoteException e) {
                     disconnectServer(curServer, e);
                 }
