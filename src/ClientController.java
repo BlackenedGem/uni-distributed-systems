@@ -129,11 +129,11 @@ public class ClientController {
             return;
         }
 
+        // Task returns 1 if file exists, -1 if it doesn't, and 0 if a remote exception occurred
         Task<Integer> task1 = new Task<Integer>() {
             @Override protected Integer call() {
                 try {
-                    String[] listings = frontEnd.list();
-                    if (Arrays.asList(listings).contains(result.get())) {
+                    if (frontEnd.fileExists(result.get())) {
                         return 1;
                     } else {
                         return -1;
