@@ -181,6 +181,27 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
     }
 
     @Override
+    public boolean fileExists(String filename) {
+        // Iterate over file servers, return true if one server returns true
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            checkServer(i);
+            ServerInterface server = fileServers.get(i);
+            if (server == null) { continue; }
+
+            try {
+                if (server.fileExists(filename)) {
+                    return true;
+                }
+            } catch (RemoteException e) {
+                disconnectServer(i, e);
+            }
+        }
+
+        // If no servers contain the file then return false
+        return false;
+    }
+
+    @Override
     public String[] list() {
         log("Received operation LIST. Checking server statuses first");
         log("Retrieving listings from servers");

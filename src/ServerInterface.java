@@ -12,6 +12,9 @@ public interface ServerInterface extends Remote {
     // Response is null if file couldn't be found/another error occurred
     byte[] download(String filename) throws RemoteException;
 
+    // Returns true if the file exists on the server
+    boolean fileExists(String filename) throws RemoteException;
+
     // Returns a list of listings
     // List is blank if no listings exist/any other errors occurred
     List<String> list() throws RemoteException;

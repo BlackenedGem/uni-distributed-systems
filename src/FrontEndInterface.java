@@ -10,6 +10,9 @@ public interface FrontEndInterface extends Remote {
     // Returns the bytes (or null if operation could not be completed)
     byte[] download(String filename) throws RemoteException;
 
+    // Returns true if the file exists on the server
+    boolean fileExists(String filename) throws RemoteException;
+
     // Returns an array of strings representing a listing
     // This array will contain 0 items if no listings exist
     String[] list() throws RemoteException;

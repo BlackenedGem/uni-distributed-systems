@@ -121,6 +121,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     @Override
+    public boolean fileExists(String filename) {
+        File file = new File(FILES_DIR + filename);
+        return file.exists();
+    }
+
+    @Override
     public List<String> list() {
         log("Received request to obtain listings");
         List<String> listings = new ArrayList<>();
