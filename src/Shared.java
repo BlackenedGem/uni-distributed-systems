@@ -1,3 +1,5 @@
+import java.io.File;
+
 public class Shared {
 
     // Converts a string to a positive integer
@@ -17,5 +19,18 @@ public class Shared {
         }
 
         return val;
+    }
+
+    public static void ensureDirExists(String location) {
+        // Create base dir if it doesn't exist
+        File bd = new File(location);
+        if (!bd.exists()) {
+            System.out.println("Base directory '" + location + "' does not exist");
+            if (bd.mkdir()) {
+                System.out.println("Directory created");
+            } else {
+                System.out.println("Could not create directory. Errors will probably occur from now on");
+            }
+        }
     }
 }

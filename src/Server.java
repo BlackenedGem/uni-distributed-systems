@@ -74,17 +74,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     // Object functions
     private Server(int id) throws RemoteException {
         this.FILES_DIR = BASE_DIR + id + "/";
-
-        // Create base dir if it doesn't exist
-        File bd = new File(FILES_DIR);
-        if (!bd.exists()) {
-            System.out.println("Base directory '" + FILES_DIR + "' does not exist");
-            if (bd.mkdir()) {
-                System.out.println("Directory created");
-            } else {
-                System.out.println("Could not create directory. Errors will probably occur from now on");
-            }
-        }
+        Shared.ensureDirExists(FILES_DIR);
     }
 
     @Override
