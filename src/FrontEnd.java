@@ -114,6 +114,8 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
     @Override
     public String delete(String filename) {
+        log("Received DELF request");
+
         // Iterate over servers. Keep track of the number of servers that we deleted from
         int numServers = 0;
         for (int i = 0; i < MAX_SERVERS; i++) {
@@ -133,12 +135,12 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         // Return status message
         if (numServers == 0) {
-            return "Could not delete file from any servers";
-        } else if (numServers == MAX_SERVERS) {
-            return "Delete file from all servers";
-        } else {
-            return String.format("Deleted file from %,d/%,d servers", numServers, MAX_SERVERS);
+            log("Could not delete file from any servers");
+            return "Could not delete file";
         }
+
+        log(String.format("Deleted file from %,d/%,d servers", numServers, MAX_SERVERS));
+        return "File deleted";
     }
 
     @Override
