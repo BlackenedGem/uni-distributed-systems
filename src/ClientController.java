@@ -157,7 +157,7 @@ public class ClientController {
             // If the file exists then prompt user to delete
             Alert a = new Alert(Alert.AlertType.CONFIRMATION);
             a.setTitle("Confirm");
-            a.setHeaderText("Delete file from all servers?");
+            a.setHeaderText("Delete file?");
             Optional<ButtonType> result2 = a.showAndWait();
 
             // Return if user does not confirm
