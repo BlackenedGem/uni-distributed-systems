@@ -25,6 +25,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         if (args.length == 0) {
             System.out.println("No arguments received");
             System.out.println("Must receive arguments in the form: ServerID [Hostname] [Port]");
+            return;
         }
 
         // Read arguments
