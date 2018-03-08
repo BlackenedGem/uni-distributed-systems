@@ -184,6 +184,8 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
     @Override
     public boolean fileExists(String filename) {
+        log("Processing request to see whether a file exists on the system");
+
         // Iterate over file servers, return true if one server returns true
         for (int i = 0; i < MAX_SERVERS; i++) {
             checkServer(i);
@@ -270,7 +272,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
 
         // No servers found
         if (filesOnServers.size() == 0) {
-            String msg = "No servers could be found to upload to";
+            String msg = "File could not be uploaded. System is offline (no servers)";
             log(msg);
             return msg;
         }
@@ -306,7 +308,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         }
 
         if (curIndex == filesOnServers.size()) {
-            return "Could not upload file to any servers";
+            return "Could not upload file";
         }
 
         // Get stats and return message
@@ -314,7 +316,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to server %,d\n%,d bytes uploaded in %,.2fs", filesOnServers.get(curIndex).getKey() + 1, data.length, timeTaken);
+        return String.format("Uploaded file.%,d bytes uploaded in %,.2fs", data.length, timeTaken);
     }
 
     private String uploadAll(String filename, byte[] data) {
@@ -339,7 +341,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
         double timeTaken = (endTime - startTime);
         timeTaken /= 1000;
 
-        return String.format("Uploaded file to %,d/%,d servers\n%,d bytes (x%,d) uploaded in %,.2fs", numServers, MAX_SERVERS, data.length, numServers, timeTaken);
+        return String.format("Uploaded file with high reliability\n%,d bytes processed in %,.2fs", data.length, timeTaken);
     }
 
     // Uploads data to an individual server
