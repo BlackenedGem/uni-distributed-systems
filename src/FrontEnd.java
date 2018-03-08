@@ -30,17 +30,7 @@ public class FrontEnd extends UnicastRemoteObject implements FrontEndInterface {
             hostname = DEFAULT_RMI_HOSTNAME;
         }
 
-        int port;
-        if (args.length >= 2) {
-            port = Shared.stringToPosInt(args[1], "Port number must be a positive integer");
-
-            if (port == -1) {
-                System.out.println("Using default port of " + DEFAULT_RMI_PORT);
-                port = DEFAULT_RMI_PORT;
-            }
-        } else {
-            port = DEFAULT_RMI_PORT;
-        }
+        int port = Shared.parseCommandLineInteger(args, 1, "Port number must be a positive integer", DEFAULT_RMI_PORT);
 
         // Initialise front end
         System.out.println("Initialising front end at " + hostname + ":" + port);

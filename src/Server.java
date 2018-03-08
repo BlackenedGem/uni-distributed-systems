@@ -29,7 +29,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         // Read arguments
-        int serverID = Shared.stringToPosInt(args[0], "Server ID must be a positive integer");
+        int serverID = Shared.parseCommandLineInteger(args, 0, "Server ID must be a positive integer", -1);
         if (serverID == -1) {
             return;
         }
@@ -41,17 +41,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             hostname = DEFAULT_RMI_HOSTNAME;
         }
 
-        int port;
-        if (args.length >= 3) {
-            port = Shared.stringToPosInt(args[2], "Port number must be a positive integer");
-
-            if (port == -1) {
-                System.out.println("Using default port of " + DEFAULT_RMI_PORT);
-                port = DEFAULT_RMI_PORT;
-            }
-        } else {
-            port = DEFAULT_RMI_PORT;
-        }
+        int port = Shared.parseCommandLineInteger(args, 2, "Port number must be a positive integer", DEFAULT_RMI_PORT);
 
         // Initialise server
         System.out.println("Initialising server with ID = " + serverID + " at " + hostname + ":" + port);
