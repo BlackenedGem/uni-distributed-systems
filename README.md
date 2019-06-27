@@ -1,5 +1,5 @@
 ## Overview
-RMI is used to show how we can easily implement redundant servers. We have 1 front, multiple servers, and a client (multiple clients out of spec). The client has no knowledge of the servers, only the front end. We support basic operations such as listing files, uploading files, downloading files, and deleting files. These operations occur on all servers for redundancy. The exception is uploading files where we have a 'high reliability' mode that uploads to all servers rather than one.
+RMI is used to show how we can easily implement redundant servers. We have 1 front end, multiple servers, and a client (multiple clients were out of spec). The client has no knowledge of the servers, only the front end. We support basic operations such as listing files, uploading files, downloading files, and deleting files. These operations occur on all servers for redundancy. The exception is uploading files where we have a 'high reliability' mode that uploads to all servers rather than one.
 
 ## Usage
 Port 1099 is used by default and is hardcoded to the frontend (but not server/client). I should have made the frontend changeable in retrospect. Server files are stored in server_files_id where id is server dependent. 
